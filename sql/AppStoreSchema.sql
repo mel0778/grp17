@@ -1,27 +1,58 @@
-/*******************
+--table 1: buyer
+CREATE TABLE IF NOT EXISTS buyer(
+	username VARCHAR(32) PRIMARY KEY,
+	password VARCHAR(32) NOT NULL,
+	first_name VARCHAR(128) NOT NULL,
+	last_name VARCHAR(128) NOT NULL,
+	phone_number INTEGER UNIQUE NOT NULL CHECK (phone_number BETWEEN 80000000 AND 99999999),
+	hall VARCHAR(32) NOT NULL CHECK (hall IN  ('Raffles','Temasek','Sheares', 'Kent Ridge','Eusoff','King Edward VII')),
+	wallet_balance MONEY NOT NULL CHECK (wallet_balance >= MONEY(5)),
+	UNIQUE (username,hall)); 
 
-  Create the schema
+--table 2: shop
+CREATE TABLE IF NOT EXISTS shop(
+	username VARCHAR(32) PRIMARY KEY,
+	password VARCHAR(32) NOT NULL,
+	shopname VARCHAR(128) UNIQUE NOT NULL,
+	opening TIME(0),
+	closing TIME(0),
+	UNIQUE (shopname,opening,closing)
+	);
 
-********************/
+--table 3: item
+CREATE TABLE IF NOT EXISTS item(
+	shopname VARCHAR(32) REFERENCES shop(shopname) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+	item VARCHAR(32) NOT NULL,
+	price MONEY NOT NULL,
+	PRIMARY KEY (shopname, item),
+	UNIQUE (shopname,item)
+);
 
-CREATE TABLE IF NOT EXISTS customers (
- first_name VARCHAR(64) NOT NULL,
- last_name VARCHAR(64) NOT NULL,
- email VARCHAR(64) UNIQUE NOT NULL,
- dob DATE NOT NULL,
- since DATE NOT NULL,
- customerid VARCHAR(16) PRIMARY KEY,
- country VARCHAR(16) NOT NULL);
+--table 4: orderid
+CREATE TABLE IF NOT EXISTS orderid(
+	group_order_id INTEGER PRIMARY KEY,
+	creator VARCHAR(32),
+	hall VARCHAR(8),
+	shopname VARCHAR(32),
+	opening TIME(0),
+	closing TIME(0),
+	order_date DATE,
+	order_by TIME(0)
+	CHECK (order_by > opening AND order_by < closing),
+	delivery_status VARCHAR(32)
+	CHECK (delivery_status IN ('Order Received', 'Vendor Preparing', 
+							   'Food Dispatched', 'Food Delivered')),
+	FOREIGN KEY(shopname, opening, closing) REFERENCES shop(shopname, opening, closing) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+	FOREIGN KEY (creator, hall) REFERENCES buyer(username, hall) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
 	
-CREATE TABLE IF NOT EXISTS games(
- name VARCHAR(32),
- version CHAR(3),
- price NUMERIC NOT NULL,
- PRIMARY KEY (name, version));
-  
- CREATE TABLE downloads(
- customerid VARCHAR(16) REFERENCES customers(customerid) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
- name VARCHAR(32),
- version CHAR(3),
- PRIMARY KEY (customerid, name, version),
- FOREIGN KEY (name, version) REFERENCES games(name, version) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED);
+);
+
+--table 5: orders
+CREATE TABLE IF NOT EXISTS orders(
+	username VARCHAR(32) REFERENCES buyer(username) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+	group_order_id INTEGER REFERENCES orderid(group_order_id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+	shopname VARCHAR(32),
+	item VARCHAR(32),
+	qty INTEGER NOT NULL CHECK(qty >= 1),
+	FOREIGN KEY (shopname,item) REFERENCES item(shopname,item) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+	PRIMARY KEY (username, group_order_id, item));
