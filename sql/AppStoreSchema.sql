@@ -1,3 +1,7 @@
+/*******************
+  Create the schema
+********************/
+
 --table 1: buyer
 CREATE TABLE IF NOT EXISTS buyer(
 	username VARCHAR(32) PRIMARY KEY,
