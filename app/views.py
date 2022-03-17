@@ -15,6 +15,7 @@ def index(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM buyer ORDER BY username")
         buyers = cursor.fetchall()
+        # list of tuples
 
     result_dict = {'records': buyers}
 
