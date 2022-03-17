@@ -1,9 +1,9 @@
 /*******************
-
   Cleaning script
-
 *******************/
 
-DROP TABLE IF EXISTS downloads;
-DROP TABLE IF EXISTS games;
-DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS orderid;
+DROP TABLE IF EXISTS item;
+DROP TABLE IF EXISTS shop;
+DROP TABLE IF EXISTS buyer;
